@@ -1,43 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"os/exec"
+	"time"
 )
 
 func main() {
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
-}
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, guestbookform)
-	usr := r.FormValue("uid")
-	pass := r.FormValue("passwd")
-	fmt.Fprint(w, usr)
-	fmt.Fprint(w, pass)
-	inputunixcommand(usr, pass)
-}
+	mux := http.NewServeMux()
+	files := http.FileServer(http.Dir(config.Static))
+	mux.Handle("/static/", http.StripPrefix("/static/", files))
 
-func inputunixcommand(usr string, pass string) {
-	out, err := exec.Command(usr, pass).Output()
-	if err != nil {
-		fmt.Println("ERROR")
+	mux.HandleFunc("/", index)
+
+	// starting up the server
+	server := &http.Server{
+		Addr:           config.Address,
+		Handler:        mux,
+		ReadTimeout:    time.Duration(config.ReadTimeout * int64(time.Second)),
+		WriteTimeout:   time.Duration(config.WriteTimeout * int64(time.Second)),
+		MaxHeaderBytes: 1 << 20,
 	}
-	fmt.Printf("%s", out)
+	server.ListenAndServe()
 }
-
-const guestbookform = `
-<html>
-<body>
-make LDAP account
-<form action="/make_account" method="post">
-<label> User name: <input type="text" name="uid"> </label>
-<label> Password: <input type="text" name="passwd"> </label>
-<input type="submit" name="post">
-</form>
-</body>
-</html>
-
-`
