@@ -9,9 +9,10 @@ func main() {
 
 	mux := http.NewServeMux()
 	files := http.FileServer(http.Dir(config.Static))
-	mux.Handle("/static/", http.StripPrefix("/static/", files))
+	mux.Handle("/public/", http.StripPrefix("/public/", files))
 
 	mux.HandleFunc("/", index)
+	mux.HandleFunc("/login", login)
 
 	// starting up the server
 	server := &http.Server{
