@@ -13,8 +13,8 @@ func main() {
 
 	mux.HandleFunc("/", index)
 	mux.HandleFunc("/login", login)
+	mux.HandleFunc("/register", register)
 
-	// starting up the server
 	server := &http.Server{
 		Addr:           config.Address,
 		Handler:        mux,
